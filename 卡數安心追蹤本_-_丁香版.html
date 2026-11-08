@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>卡數安心追蹤本 - 丁香版</title>
+  
+  <!-- PWA & iOS Safari Meta Tags -->
+  <meta name="theme-color" content="#C8A2D8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="丁香記賬">
+  <link id="apple-touch-icon" rel="apple-touch-icon" sizes="180x180" href="">
+  <link id="pwa-manifest" rel="manifest" href="">
+
+  <!-- Google Fonts: 圓體粗體 & 肥嘟嘟數字 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bgCream: '#F7F2FF',
+            cardWhite: '#FFFDF8',
+            lilac: '#C8A2D8',
+            lilacDark: '#B085C4',
+            lilacLight: '#E9D5FF',
+            butter: '#FFE08A',
+            peach: '#FFB3C7',
+            peachDark: '#FF8DA8',
+            deepBrown: '#4A3B52',
+            mutedBrown: '#8C7A96'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-purple: #F7F2FF;
+      --card-white: #FFFDF8;
+      --lilac: #C8A2D8;
+      --lilac-light: #E9D5FF;
+      --butter: #FFE08A;
+      --peach: #FFB3C7;
+      --text-main: #4A3B52;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-purple);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(233, 213, 255, 0.5) 0%, transparent 35%),
+        radial-gradient(circle at 85% 80%, rgba(255, 179, 199, 0.3) 0%, transparent 40%);
+      color: var(--text-main);
+      font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 16px;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* 肥嘟嘟數字字體 */
+    .chubby-num {
+      font-family: 'Fredoka', 'M PLUS Rounded 1c', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    /* 卡片手繪虛線邊框 + 柔和紫色陰影 + 26px圓角 */
+    .lilac-card {
+      background-color: var(--card-white);
+      border-radius: 26px;
+      border: 2.5px dashed var(--lilac);
+      box-shadow: 0 12px 28px -6px rgba(200, 162, 216, 0.32), 0 4px 12px -2px rgba(74, 59, 82, 0.05);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 膠囊彈跳按鈕 */
+    .btn-capsule {
+      border-radius: 9999px;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn-capsule:active {
+      transform: scale(0.95);
+    }
+    @media (hover: hover) {
+      .btn-capsule:hover {
+        transform: scale(1.04);
+      }
+    }
+    .bounce-click {
+      animation: btnBounce 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes btnBounce {
+      0% { transform: scale(1); }
+      40% { transform: scale(0.94); }
+      80% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* 載入動畫 fade-in-up */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* 丁香呼吸浮動微動畫 */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    .mascot-float {
+      animation: floatSlow 3.5s ease-in-out infinite;
+    }
+
+    /* 防出界統一輸入框樣式 (字體 >= 16px 防 iOS Safari 自動 Zoom) */
+    .safe-input {
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      flex: 1;
+      height: 52px;
+      padding: 0 14px;
+      border-radius: 18px;
+      border: 2px solid #E9D5FF;
+      background-color: #FFFFFF;
+      color: #4A3B52;
+      font-size: 16px;
+      font-weight: 700;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+    }
+    .safe-input:focus, .safe-input:focus-within {
+      border-color: #C8A2D8;
+      box-shadow: 0 0 0 3px rgba(200, 162, 216, 0.25);
+    }
+
+    /* 假框包裝法：原生 date input 完全透明覆蓋喺假框入面，絕不出界 */
+    .fake-date-wrapper {
+      position: relative;
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      flex: 1;
+      height: 52px;
+      padding: 0 14px;
+      border-radius: 18px;
+      border: 2px solid #E9D5FF;
+      background-color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .fake-date-wrapper:focus-within {
+      border-color: #C8A2D8;
+      box-shadow: 0 0 0 3px rgba(200, 162, 216, 0.25);
+    }
+    .fake-date-wrapper input[type="date"] {
+      opacity: 0;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      border: none;
+      cursor: pointer;
+      z-index: 20;
+      font-size: 16px;
+    }
+    .fake-date-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* 隱藏橫向捲軸但保留滑動 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 愛心紙碎特效 */
+    .confetti-particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      animation: confettiFall forwards cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    @keyframes confettiFall {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0deg) scale(0.7);
+      }
+      50% {
+        opacity: 1;
+        transform: translate(var(--tx-mid), var(--ty-mid)) rotate(180deg) scale(1.15);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--tx-end), var(--ty-end)) rotate(360deg) scale(0.8);
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-14 selection:bg-lilacLight selection:text-deepBrown">
+
+  <!-- 主容器：每個大區塊之間嚴格保留 24px (space-y-6) 留白 -->
+  <main class="max-w-md mx-auto px-4 pt-5 space-y-6">
+
+    <!-- 1. 頂部標題列 & 小按鈕 -->
+    <header class="flex items-center justify-between animate-fade-in-up" style="animation-delay: 0.02s;">
+      <div class="flex items-center gap-2.5">
+        <div class="w-11 h-11 rounded-2xl bg-lilacLight border-2 border-lilac flex items-center justify-center shadow-sm">
+          <span class="text-2xl">🐾</span>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight text-deepBrown leading-tight">卡數安心追蹤本</h1>
+          <p class="text-sm font-bold text-mutedBrown">丁香陪你輕鬆清卡數 ✨</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="openPhotoModal()" class="btn-capsule bg-cardWhite border-2 border-lilac px-3.5 py-1.5 text-sm font-bold text-deepBrown shadow-sm flex items-center gap-1" title="更換或上傳你嘅丁香原圖">
+          <span>🖼️</span>
+          <span>丁香圖</span>
+        </button>
+        <button onclick="openPwaGuide()" class="btn-capsule bg-butter/80 border-2 border-lilac px-3 py-1.5 text-sm font-bold text-deepBrown shadow-sm" title="加至 iPhone 主畫面教學">
+          📲
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. 頂部吉祥物丁香插畫 + 狀態文案 + 總進度條 -->
+    <section class="lilac-card p-5 relative overflow-visible animate-fade-in-up" style="animation-delay: 0.08s;">
+      <!-- 狀態標籤 -->
+      <div class="flex justify-between items-center mb-2">
+        <span id="mascot-badge" class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-sm font-extrabold bg-lilacLight text-deepBrown">
+          🐾 丁香而家盯緊你啲卡數
+        </span>
+        <span id="current-month-tag" class="text-sm font-bold text-mutedBrown chubby-num"></span>
+      </div>
+
+      <!-- 丁香插畫展示區 (支援原圖上傳或高還原插畫自動切換) -->
+      <div class="relative w-48 h-48 mx-auto my-2 flex items-center justify-center mascot-float">
+        <img id="mascot-img" src="" alt="吉祥物丁香" class="w-full h-full object-contain rounded-[24px] shadow-sm border-2 border-lilacLight/80 bg-[#F9F3FF]" />
+      </div>
+
+      <!-- 一句可愛人話文案 -->
+      <div class="text-center mt-2 mb-4 px-2">
+        <p id="mascot-quote" class="text-lg font-extrabold text-deepBrown leading-snug">
+          「喵～準時餵飽個錢罌，唔好俾銀行賺利息呀！」
+        </p>
+        <p id="progress-subquote" class="text-sm font-bold text-mutedBrown mt-1">
+          一齊努力餵飽丁香啦！
+        </p>
+      </div>
+
+      <!-- 本月總欠款進度條 (紫色漸變，進度點係丁香頭) -->
+      <div class="mt-5 mb-2">
+        <div class="flex justify-between items-end mb-3 px-1">
+          <span class="text-sm font-extrabold text-deepBrown">🎉 本月餵飽丁香進度</span>
+          <span id="progress-percent" class="chubby-num text-xl text-deepBrown">0%</span>
+        </div>
+
+        <div class="relative h-5 w-full bg-[#EFE6F7] rounded-full p-0.5 border border-lilac/50 shadow-inner">
+          <!-- 紫色漸變進度條 -->
+          <div id="progress-bar-fill" class="h-full rounded-full transition-all duration-700 ease-out"
+               style="width: 0%; background: linear-gradient(90deg, #E9D5FF 0%, #C8A2D8 55%, #FFB3C7 100%);">
+          </div>
+
+          <!-- 進度點：丁香個頭 -->
+          <div id="progress-cat-thumb" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 transition-all duration-700 ease-out pointer-events-none drop-shadow-md"
+               style="left: 0%;">
+            <svg viewBox="0 0 100 100" class="w-full h-full">
+              <!-- 圓頭圓腦丁香頭像指示點 -->
+              <circle cx="50" cy="52" r="42" fill="#FFFDF8" stroke="#4A3B52" stroke-width="5"/>
+              <path d="M 18 42 L 14 14 L 40 24 Z" fill="#B6A6BE" stroke="#4A3B52" stroke-width="5" stroke-linejoin="round"/>
+              <path d="M 21 37 L 19 20 L 35 26 Z" fill="#F4B8C8"/>
+              <path d="M 82 42 L 86 14 L 60 24 Z" fill="#B6A6BE" stroke="#4A3B52" stroke-width="5" stroke-linejoin="round"/>
+              <path d="M 79 37 L 81 20 L 65 26 Z" fill="#F4B8C8"/>
+              <ellipse cx="50" cy="56" rx="38" ry="33" fill="#B6A6BE" stroke="#4A3B52" stroke-width="5"/>
+              <!-- 白鼻樑與白嘴邊 -->
+              <path d="M 50 34 C 44 50 32 62 32 74 C 32 84 68 84 68 74 C 68 62 56 50 50 34 Z" fill="#FFFFFF"/>
+              <!-- 琥珀色大眼 -->
+              <circle cx="34" cy="54" r="8" fill="#D88B28" stroke="#4A3B52" stroke-width="4"/>
+              <circle cx="66" cy="54" r="8" fill="#D88B28" stroke="#4A3B52" stroke-width="4"/>
+              <circle cx="32" cy="52" r="2.5" fill="#FFFFFF"/>
+              <circle cx="64" cy="52" r="2.5" fill="#FFFFFF"/>
+              <!-- 粉紅鼻 + 小嘴 -->
+              <ellipse cx="50" cy="63" rx="4" ry="2.8" fill="#E899AC"/>
+              <path d="M 45 71 Q 50 66 55 71" fill="none" stroke="#4A3B52" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 本月統計 3 格數據卡 -->
+      <div class="grid grid-cols-3 gap-2.5 mt-6 pt-4 border-t-2 border-dashed border-lilacLight">
+        <div class="bg-[#FAF6FF] rounded-2xl p-2.5 text-center border border-lilacLight">
+          <div class="text-sm font-bold text-mutedBrown mb-0.5">💳 仲差咁多咋</div>
+          <div class="chubby-num text-base sm:text-lg text-deepBrown truncate">
+            $<span id="stat-unpaid">0</span>
+          </div>
+        </div>
+        <div class="bg-[#FFF9E6] rounded-2xl p-2.5 text-center border border-butter">
+          <div class="text-sm font-bold text-mutedBrown mb-0.5">🎉 已餵飽總數</div>
+          <div class="chubby-num text-base sm:text-lg text-deepBrown truncate">
+            $<span id="stat-paid">0</span>
+          </div>
+        </div>
+        <div class="bg-[#FFF2F6] rounded-2xl p-2.5 text-center border border-peach/60">
+          <div class="text-sm font-bold text-mutedBrown mb-0.5">📅 本月總卡數</div>
+          <div class="chubby-num text-base sm:text-lg text-deepBrown truncate">
+            $<span id="stat-total">0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 新增卡數表單區塊 -->
+    <section class="lilac-card p-5 animate-fade-in-up" style="animation-delay: 0.14s;">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-extrabold text-deepBrown flex items-center gap-2">
+          <span>✏️</span>
+          <span>幫丁香記低新卡數</span>
+        </h2>
+        <span class="text-sm font-bold text-mutedBrown">香港全清單支援</span>
+      </div>
+
+      <form id="add-bill-form" onsubmit="handleAddBill(event)" class="space-y-4">
+        <!-- 卡名 / 貸款名稱：可快速揀香港主流銀行卡，亦可直接打字修改 -->
+        <div>
+          <label class="block text-sm font-extrabold text-deepBrown mb-1.5">
+            🏦 邊張卡 / 邊筆貸款呀？
+          </label>
+          <div class="space-y-2">
+            <select id="preset-card-select" onchange="handlePresetSelect(this.value)" class="safe-input cursor-pointer">
+              <option value="">✨ 撳呢度快速揀香港熱門信用卡 / 貸款...</option>
+              <optgroup label="🔥 滙豐銀行 HSBC">
+                <option value="HSBC Red 信用卡">HSBC Red 信用卡</option>
+                <option value="HSBC EveryMile 信用卡">HSBC EveryMile 信用卡</option>
+                <option value="HSBC Visa Signature 卡">HSBC Visa Signature 卡</option>
+                <option value="HSBC 白金 Visa 卡">HSBC 白金 Visa 卡</option>
+                <option value="HSBC Pulse 銀聯雙幣鑽石卡">HSBC Pulse 銀聯雙幣鑽石卡</option>
+              </optgroup>
+              <optgroup label="🌿 恒生銀行 Hang Seng">
+                <option value="恒生 MMPOWER World Mastercard">恒生 MMPOWER World Mastercard</option>
+                <option value="恒生 Travel+ Visa Signature 卡">恒生 Travel+ Visa Signature 卡</option>
+                <option value="恒生 enJoy 卡">恒生 enJoy 卡</option>
+                <option value="恒生大學/大專信用卡">恒生大學/大專信用卡</option>
+              </optgroup>
+              <optgroup label="🦁 渣打銀行 Standard Chartered">
+                <option value="渣打國泰 Mastercard">渣打國泰 Mastercard</option>
+                <option value="渣打 Smart 卡">渣打 Smart 卡</option>
+                <option value="渣打 Simply Cash Visa 卡">渣打 Simply Cash Visa 卡</option>
+              </optgroup>
+              <optgroup label="🌐 花旗銀行 Citibank">
+                <option value="Citi Cash Back 信用卡">Citi Cash Back 信用卡</option>
+                <option value="Citi PremierMiles 信用卡">Citi PremierMiles 信用卡</option>
+                <option value="Citi Rewards 信用卡">Citi Rewards 信用卡</option>
+                <option value="Citi Octopus 八達通信用卡">Citi Octopus 八達通信用卡</option>
+                <option value="Citi The Club 信用卡">Citi The Club 信用卡</option>
+              </optgroup>
+              <optgroup label="🏦 中銀香港 BOCHK">
+                <option value="中銀 Chill Card">中銀 Chill Card</option>
+                <option value="中銀 Cheers Card">中銀 Cheers Card</option>
+                <option value="中銀 SOGO Visa 卡">中銀 SOGO Visa 卡</option>
+                <option value="中銀 Go 銀聯卡">中銀 Go 銀聯卡</option>
+                <option value="中銀淘寶 World Mastercard">中銀淘寶 World Mastercard</option>
+              </optgroup>
+              <optgroup label="星展 DBS / 東亞 BEA / 大新 / 安信">
+                <option value="DBS Black World Mastercard">DBS Black World Mastercard</option>
+                <option value="DBS Eminent Card">DBS Eminent Card</option>
+                <option value="DBS COMPASS VISA">DBS COMPASS VISA</option>
+                <option value="DBS Live Fresh 信用卡">DBS Live Fresh 信用卡</option>
+                <option value="東亞 BEA World Mastercard">東亞 BEA World Mastercard</option>
+                <option value="東亞 BEA Goal 信用卡">東亞 BEA Goal 信用卡</option>
+                <option value="安信 EarnMORE 銀聯卡">安信 EarnMORE 銀聯卡</option>
+                <option value="安信 WeWa 銀聯/Visa 卡">安信 WeWa 銀聯/Visa 卡</option>
+                <option value="大新 ONE+ 信用卡">大新 ONE+ 信用卡</option>
+                <option value="大新英國航空白金卡">大新英國航空白金卡</option>
+              </optgroup>
+              <optgroup label="📱 虛擬銀行 & 永隆 / 中信 / AE / AEON">
+                <option value="Mox Credit">Mox Credit</option>
+                <option value="ZA Card">ZA Card</option>
+                <option value="livi PayLater Mastercard">livi PayLater Mastercard</option>
+                <option value="WeLab Bank 卡">WeLab Bank 卡</option>
+                <option value="信銀國際 Motion 信用卡">信銀國際 Motion 信用卡</option>
+                <option value="信銀國際大灣區雙幣信用卡">信銀國際大灣區雙幣信用卡</option>
+                <option value="招商永隆「一點通」信用卡">招商永隆「一點通」信用卡</option>
+                <option value="AEON Card WAKUWAKU">AEON Card WAKUWAKU</option>
+                <option value="AEON 紫卡">AEON 紫卡</option>
+                <option value="American Express Explorer">American Express Explorer</option>
+                <option value="American Express Blue Cash">American Express Blue Cash</option>
+                <option value="Sim Credit Card">Sim Credit Card</option>
+              </optgroup>
+              <optgroup label="💰 分期及私人貸款">
+                <option value="稅季貸款 Tax Loan">稅季貸款 Tax Loan</option>
+                <option value="私人分期貸款">私人分期貸款</option>
+                <option value="信用卡簽賬分期">信用卡簽賬分期</option>
+                <option value="Apple 分期付款">Apple 分期付款</option>
+                <option value="Grantit / 學生貸款">Grantit / 學生貸款</option>
+                <option value="屋企人/朋友還款">屋企人/朋友還款</option>
+              </optgroup>
+            </select>
+
+            <input
+              type="text"
+              id="card-name-input"
+              required
+              placeholder="或者直接打入卡名 / 可隨時修改..."
+              class="safe-input"
+            />
+          </div>
+        </div>
+
+        <!-- 防出界關鍵：今期結欠 + 還款到期日 嚴格使用 grid-template-columns: 1fr 1fr 並排，相同高度與闊度 -->
+        <div class="grid grid-cols-2 gap-3 items-end">
+          <!-- 左欄：要還幾多呀？ -->
+          <div class="min-w-0">
+            <label for="amount-input" class="block text-sm font-extrabold text-deepBrown mb-1.5 truncate">
+              💳 要還幾多呀？
+            </label>
+            <div class="relative flex items-center">
+              <span class="absolute left-3.5 text-deepBrown font-extrabold chubby-num pointer-events-none">$</span>
+              <input
+                type="number"
+                id="amount-input"
+                inputmode="decimal"
+                step="0.01"
+                min="0"
+                required
+                placeholder="0.00"
+                class="safe-input pl-8 chubby-num"
+              />
+            </div>
+          </div>
+
+          <!-- 右欄：要喺呢日之前餵飽丁香 (假框包裝法) -->
+          <div class="min-w-0">
+            <label for="due-date-input" class="block text-sm font-extrabold text-deepBrown mb-1.5 truncate">
+              📅 呢日前餵飽丁香
+            </label>
+            <div class="fake-date-wrapper">
+              <span id="fake-date-display" class="text-base font-extrabold text-deepBrown truncate chubby-num">
+                揀個日子
+              </span>
+              <span class="text-base shrink-0 ml-1 pointer-events-none">🗓️</span>
+              <input
+                type="date"
+                id="due-date-input"
+                required
+                onchange="updateFakeDateDisplay(this.value)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- 提交膠囊按鈕 -->
+        <button
+          type="submit"
+          id="submit-btn"
+          class="btn-capsule w-full py-3.5 bg-lilac hover:bg-lilacDark text-deepBrown font-extrabold text-base shadow-md border-2 border-deepBrown/15 flex items-center justify-center gap-2"
+        >
+          <span>🐾</span>
+          <span>+ 記一筆啦</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- 4. 搜尋 + 篩選區塊 -->
+    <section class="space-y-3 animate-fade-in-up" style="animation-delay: 0.2s;">
+      <!-- 搜尋欄 -->
+      <div class="relative">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-base pointer-events-none">🔍</span>
+        <input
+          type="text"
+          id="search-input"
+          oninput="handleSearch(this.value)"
+          placeholder="搵下邊張卡..."
+          class="safe-input pl-11 bg-cardWhite border-2 border-lilac rounded-full shadow-sm"
+        />
+      </div>
+
+      <!-- 4個膠囊篩選掣 -->
+      <div class="grid grid-cols-4 gap-2">
+        <button onclick="setFilter('all', this)" data-filter="all" class="filter-btn btn-capsule py-2 px-2 text-sm font-extrabold bg-lilac text-deepBrown border-2 border-deepBrown/15 shadow-sm">
+          全部 <span id="count-all" class="chubby-num ml-0.5">(0)</span>
+        </button>
+        <button onclick="setFilter('unpaid', this)" data-filter="unpaid" class="filter-btn btn-capsule py-2 px-2 text-sm font-extrabold bg-cardWhite text-mutedBrown border-2 border-lilacLight">
+          未還 <span id="count-unpaid" class="chubby-num ml-0.5">(0)</span>
+        </button>
+        <button onclick="setFilter('paid', this)" data-filter="paid" class="filter-btn btn-capsule py-2 px-2 text-sm font-extrabold bg-cardWhite text-mutedBrown border-2 border-lilacLight">
+          已還 <span id="count-paid" class="chubby-num ml-0.5">(0)</span>
+        </button>
+        <button onclick="setFilter('overdue', this)" data-filter="overdue" class="filter-btn btn-capsule py-2 px-2 text-sm font-extrabold bg-cardWhite text-mutedBrown border-2 border-lilacLight">
+          逾期 <span id="count-overdue" class="chubby-num ml-0.5">(0)</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 5. 卡數卡片列表區塊 -->
+    <section id="bills-list" class="space-y-6 animate-fade-in-up" style="animation-delay: 0.26s;">
+      <!-- 由 JavaScript 動態渲染 -->
+    </section>
+
+    <!-- 底部溫馨小提示 -->
+    <footer class="text-center pt-2 pb-8 text-sm font-bold text-mutedBrown space-y-2">
+      <p>💜 資料已安全儲存在你部 iPhone 入面，Refresh 都唔會唔見㗎！</p>
+      <div class="flex justify-center gap-3">
+        <button onclick="resetDemoData()" class="underline hover:text-deepBrown">載入示範卡數</button>
+        <span>·</span>
+        <button onclick="clearAllPaid()" class="underline hover:text-deepBrown">清除已還清記錄</button>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- 彈窗 1：更換 / 同步你上傳嘅 3 張丁香原圖 Modal -->
+  <div id="photo-modal" class="fixed inset-0 bg-deepBrown/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="lilac-card max-w-sm w-full p-5 space-y-4 animate-fade-in-up max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center">
+        <h3 class="text-lg font-extrabold text-deepBrown">🖼️ 丁香 3 種狀態插畫設定</h3>
+        <button onclick="closePhotoModal()" class="btn-capsule w-8 h-8 bg-lilacLight text-deepBrown font-extrabold flex items-center justify-center">✕</button>
+      </div>
+      <p class="text-sm font-bold text-mutedBrown leading-relaxed">
+        預設已為你高度還原你提供嘅 3 張丁香插畫！如果你想直接套用手機相簿入面嗰 3 張原圖，可以喺下面揀選，會自動儲存喺手機入面（同時自動更新埋主畫面 Icon）：
+      </p>
+
+      <div class="space-y-3">
+        <!-- 正常版 -->
+        <div class="p-3 rounded-2xl bg-[#FAF6FF] border border-lilac flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <img id="preview-normal" src="" class="w-14 h-14 rounded-xl object-cover border border-lilac shrink-0" />
+            <div class="min-w-0">
+              <div class="text-sm font-extrabold text-deepBrown">1. 正常版 (有欠款)</div>
+              <div class="text-sm text-mutedBrown truncate">臭臉抱住紫色小豬錢罌</div>
+            </div>
+          </div>
+          <label class="btn-capsule bg-lilac px-3 py-1.5 text-sm font-extrabold text-deepBrown shrink-0 cursor-pointer">
+            揀圖
+            <input type="file" accept="image/*" class="hidden" onchange="handleCustomImageUpload('normal', this)" />
+          </label>
+        </div>
+
+        <!-- 開心版 -->
+        <div class="p-3 rounded-2xl bg-[#FFF9E6] border border-butter flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <img id="preview-happy" src="" class="w-14 h-14 rounded-xl object-cover border border-lilac shrink-0" />
+            <div class="min-w-0">
+              <div class="text-sm font-extrabold text-deepBrown">2. 開心版 (欠款=0)</div>
+              <div class="text-sm text-mutedBrown truncate">星星眼大笑 + 錢罌爆金幣</div>
+            </div>
+          </div>
+          <label class="btn-capsule bg-butter px-3 py-1.5 text-sm font-extrabold text-deepBrown shrink-0 cursor-pointer">
+            揀圖
+            <input type="file" accept="image/*" class="hidden" onchange="handleCustomImageUpload('happy', this)" />
+          </label>
+        </div>
+
+        <!-- 瞇眼版 -->
+        <div class="p-3 rounded-2xl bg-[#FFF2F6] border border-peach flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <img id="preview-sleepy" src="" class="w-14 h-14 rounded-xl object-cover border border-lilac shrink-0" />
+            <div class="min-w-0">
+              <div class="text-sm font-extrabold text-deepBrown">3. 瞇眼版 (逾期)</div>
+              <div class="text-sm text-mutedBrown truncate">眼皮垂低 Zzz 抱住空錢罌</div>
+            </div>
+          </div>
+          <label class="btn-capsule bg-peach px-3 py-1.5 text-sm font-extrabold text-deepBrown shrink-0 cursor-pointer">
+            揀圖
+            <input type="file" accept="image/*" class="hidden" onchange="handleCustomImageUpload('sleepy', this)" />
+          </label>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="resetDefaultMascotImages()" class="btn-capsule flex-1 py-2.5 bg-lilacLight text-deepBrown font-extrabold text-sm">
+          還原預設丁香插畫
+        </button>
+        <button onclick="closePhotoModal()" class="btn-capsule flex-1 py-2.5 bg-lilac text-deepBrown font-extrabold text-sm">
+          完成設定
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 彈窗 2：iPhone Add to Home Screen & 部署指引 Modal -->
+  <div id="pwa-modal" class="fixed inset-0 bg-deepBrown/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="lilac-card max-w-sm w-full p-5 space-y-4 animate-fade-in-up">
+      <div class="flex justify-between items-center">
+        <h3 class="text-lg font-extrabold text-deepBrown">📲 加至 iPhone 主畫面教學</h3>
+        <button onclick="closePwaGuide()" class="btn-capsule w-8 h-8 bg-lilacLight text-deepBrown font-extrabold flex items-center justify-center">✕</button>
+      </div>
+      <div class="space-y-3 text-sm font-bold text-deepBrown leading-relaxed">
+        <div class="p-3 rounded-2xl bg-[#FAF6FF] border border-lilacLight">
+          <p class="font-extrabold mb-1">1️⃣ 喺 iPhone Safari 打開呢個網頁</p>
+          <p class="text-mutedBrown">撳底部中間嘅「分享」按鈕（方框向上箭嘴圖示 ⬆️）。</p>
+        </div>
+        <div class="p-3 rounded-2xl bg-[#FFF9E6] border border-butter">
+          <p class="font-extrabold mb-1">2️⃣ 揀選「加至主畫面 (Add to Home Screen)」</p>
+          <p class="text-mutedBrown">你會見到實色背景嘅「丁香個頭」專屬 Icon 同埋「丁香記賬」名稱，撳右上角「新增」即可全螢幕獨立運作！</p>
+        </div>
+      </div>
+      <button onclick="closePwaGuide()" class="btn-capsule w-full py-3 bg-lilac text-deepBrown font-extrabold text-base">
+        知道啦喵 🐾
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /******************************************************************
+     * 1. 丁香三種狀態插畫 (1:1 依照上傳嘅3張紫丁香色英短貓圖精細繪製 SVG)
+     *    同時支援用家一鍵揀選原圖儲存在 localStorage
+     ******************************************************************/
+    const DEFAULT_MASCOT_SVGS = {
+      // 狀態 1：正常版 (有欠款) —— 臭臉抱住紫色小豬錢罌
+      normal: `data:image/svg+xml;utf8,` + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+          <rect width="400" height="400" rx="48" fill="#F9F2FF"/>
+          <!-- 尾巴 -->
+          <path d="M 105 328 C 60 322 55 278 90 286 C 105 290 112 308 112 320 Z" fill="#A595AE" stroke="#4A344D" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- 身體 -->
+          <path d="M 108 215 C 88 265 92 345 142 355 L 258 355 C 308 345 312 265 292 215 Z" fill="#B5A6BE" stroke="#4A344D" stroke-width="8" stroke-linejoin="round"/>
+          <!-- 白色肚腩 -->
+          <ellipse cx="200" cy="295" rx="58" ry="52" fill="#FFFFFF"/>
+          <!-- 圓頭圓腦 + 雙耳 -->
+          <path d="M 108 135 L 96 62 C 96 56 102 54 108 56 L 165 82 C 188 76 212 76 235 82 L 292 56 C 298 54 304 56 304 62 L 292 135 C 318 168 312 222 272 238 C 232 252 168 252 128 238 C 88 222 82 168 108 135 Z" fill="#B5A6BE" stroke="#4A344D" stroke-width="8" stroke-linejoin="round"/>
+          <!-- 粉紅耳窩 -->
+          <path d="M 112 120 L 106 76 L 148 92 Z" fill="#F2B4C4" stroke="#4A344D" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M 288 120 L 294 76 L 252 92 Z" fill="#F2B4C4" stroke="#4A344D" stroke-width="6" stroke-linejoin="round"/>
+          <!-- 白鼻樑 + 白嘴邊 -->
+          <path d="M 200 115 C 192 152 160 176 146 215 C 138 235 168 246 200 246 C 232 246 262 235 254 215 C 240 176 208 152 200 115 Z" fill="#FFFFFF"/>
+          <!-- 額頭淺紋 -->
+          <path d="M 184 114 C 182 128 184 136 186 142" stroke="#96859F" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 216 114 C 218 128 216 136 214 142" stroke="#96859F" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 168 124 C 166 134 168 142 172 146" stroke="#96859F" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 232 124 C 234 134 232 142 228 146" stroke="#96859F" stroke-width="5" stroke-linecap="round"/>
+          <!-- 琥珀色半垂死魚臭臉大眼 -->
+          <g>
+            <path d="M 134 162 C 134 186 174 186 174 162 Z" fill="#E09638" stroke="#4A344D" stroke-width="6.5" stroke-linejoin="round"/>
+            <circle cx="154" cy="166" r="11" fill="#8C5319"/>
+            <line x1="131" y1="162" x2="177" y2="162" stroke="#4A344D" stroke-width="7.5" stroke-linecap="round"/>
+            <path d="M 226 162 C 226 186 266 186 266 162 Z" fill="#E09638" stroke="#4A344D" stroke-width="6.5" stroke-linejoin="round"/>
+            <circle cx="246" cy="166" r="11" fill="#8C5319"/>
+            <line x1="223" y1="162" x2="269" y2="162" stroke="#4A344D" stroke-width="7.5" stroke-linecap="round"/>
+          </g>
+          <!-- 粉紅小鼻 + 臭臉倒V嘴 -->
+          <ellipse cx="200" cy="184" rx="7.5" ry="5" fill="#E598AA"/>
+          <path d="M 190 202 Q 200 190 210 202" fill="none" stroke="#4A344D" stroke-width="6.5" stroke-linecap="round"/>
+          <!-- 白色鬍鬚 -->
+          <line x1="78" y1="184" x2="115" y2="188" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="82" y1="202" x2="117" y2="198" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="322" y1="184" x2="285" y2="188" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="318" y1="202" x2="283" y2="198" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <!-- 紫色小豬錢罌 -->
+          <g>
+            <path d="M 160 228 L 150 208 C 148 202 156 198 164 204 L 180 216 Q 200 210 220 216 L 236 204 C 244 198 252 202 250 208 L 240 228 C 258 245 256 282 238 296 L 236 310 C 235 315 220 315 218 308 L 216 302 Q 200 304 184 302 L 182 308 C 180 315 165 315 164 310 L 162 296 C 144 282 142 245 160 228 Z" fill="#C9A3DC" stroke="#4A344D" stroke-width="7.5" stroke-linejoin="round"/>
+            <!-- 投幣口 -->
+            <line x1="188" y1="224" x2="212" y2="224" stroke="#4A344D" stroke-width="6.5" stroke-linecap="round"/>
+            <!-- 豬眼睛 + 豬鼻 -->
+            <circle cx="176" cy="256" r="5.5" fill="#4A344D"/>
+            <circle cx="224" cy="256" r="5.5" fill="#4A344D"/>
+            <ellipse cx="200" cy="268" rx="16" ry="11" fill="#B589CC" stroke="#4A344D" stroke-width="4.5"/>
+            <circle cx="195" cy="268" r="2.8" fill="#4A344D"/>
+            <circle cx="205" cy="268" r="2.8" fill="#4A344D"/>
+            <!-- 閃光點綴 -->
+            <path d="M 168 236 L 171 242 L 177 245 L 171 248 L 168 254 L 165 248 L 159 245 L 165 242 Z" fill="#F2E2FF"/>
+            <path d="M 228 282 L 230 286 L 234 288 L 230 290 L 228 294 L 226 290 L 222 288 L 226 286 Z" fill="#F2E2FF"/>
+          </g>
+          <!-- 抱住錢罌嘅白色手仔 -->
+          <path d="M 112 246 C 122 238 148 242 158 252 C 166 260 164 280 150 282 C 132 284 115 276 110 266" fill="#B5A6BE" stroke="#4A344D" stroke-width="7.5" stroke-linecap="round"/>
+          <circle cx="148" cy="266" r="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="6.5"/>
+          <path d="M 288 246 C 278 238 252 242 242 252 C 234 260 236 280 250 282 C 268 284 285 276 290 266" fill="#B5A6BE" stroke="#4A344D" stroke-width="7.5" stroke-linecap="round"/>
+          <circle cx="252" cy="266" r="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="6.5"/>
+          <!-- 白色肥腳仔 -->
+          <ellipse cx="152" cy="350" rx="24" ry="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="7.5"/>
+          <ellipse cx="248" cy="350" rx="24" ry="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="7.5"/>
+        </svg>
+      `),
+
+      // 狀態 2：開心版 (欠款=0) —— 星星眼大笑，頭上有彩帶+愛心，錢罌爆金幣
+      happy: `data:image/svg+xml;utf8,` + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+          <rect width="400" height="400" rx="48" fill="#F9F2FF"/>
+          <!-- 頭頂彩帶 + 愛心 + 星星 -->
+          <path d="M 192 42 C 192 34 202 34 202 42 C 202 34 212 34 212 42 C 212 52 202 58 202 62 C 202 58 192 52 192 42 Z" fill="#F48FB1"/>
+          <path d="M 225 52 C 225 45 234 45 234 52 C 234 45 243 45 243 52 C 243 60 234 65 234 68 C 234 65 225 60 225 52 Z" fill="#F48FB1"/>
+          <path d="M 65 155 C 65 148 73 148 73 155 C 73 148 81 148 81 155 C 81 162 73 166 73 169 C 73 166 65 162 65 155 Z" fill="#F48FB1"/>
+          <path d="M 322 122 C 322 115 330 115 330 122 C 330 115 338 115 338 122 C 338 129 330 133 330 136 C 330 133 322 129 322 122 Z" fill="#F48FB1"/>
+          <path d="M 130 30 Q 142 36 140 46 Q 138 56 150 60" fill="none" stroke="#B388EB" stroke-width="6" stroke-linecap="round"/>
+          <path d="M 270 30 Q 258 38 260 48 Q 262 56 250 62" fill="none" stroke="#80B3FF" stroke-width="6" stroke-linecap="round"/>
+          <rect x="78" y="88" width="12" height="8" rx="2" transform="rotate(-25 78 88)" fill="#FFE08A"/>
+          <rect x="315" y="72" width="12" height="8" rx="2" transform="rotate(30 315 72)" fill="#B388EB"/>
+          <rect x="52" y="218" width="12" height="8" rx="2" transform="rotate(20 52 218)" fill="#B388EB"/>
+          <rect x="336" y="212" width="12" height="8" rx="2" transform="rotate(-20 336 212)" fill="#FFE08A"/>
+          <path d="M 310 40 L 314 50 L 324 54 L 314 58 L 310 68 L 306 58 L 296 54 L 306 50 Z" fill="#FFE08A"/>
+          <path d="M 55 112 L 58 120 L 66 123 L 58 126 L 55 134 L 52 126 L 44 123 L 52 120 Z" fill="#FFE08A"/>
+
+          <!-- 尾巴 -->
+          <path d="M 105 328 C 60 322 55 278 90 286 C 105 290 112 308 112 320 Z" fill="#A595AE" stroke="#4A344D" stroke-width="8" stroke-linecap="round"/>
+          <!-- 身體 -->
+          <path d="M 108 215 C 88 265 92 345 142 355 L 258 355 C 308 345 312 265 292 215 Z" fill="#B5A6BE" stroke="#4A344D" stroke-width="8" stroke-linejoin="round"/>
+          <ellipse cx="200" cy="295" rx="58" ry="52" fill="#FFFFFF"/>
+          <!-- 圓頭 + 耳朵 -->
+          <path d="M 108 135 L 96 62 C 96 56 102 54 108 56 L 165 82 C 188 76 212 76 235 82 L 292 56 C 298 54 304 56 304 62 L 292 135 C 318 168 312 222 272 238 C 232 252 168 252 128 238 C 88 222 82 168 108 135 Z" fill="#B5A6BE" stroke="#4A344D" stroke-width="8" stroke-linejoin="round"/>
+          <path d="M 112 120 L 106 76 L 148 92 Z" fill="#F2B4C4" stroke="#4A344D" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M 288 120 L 294 76 L 252 92 Z" fill="#F2B4C4" stroke="#4A344D" stroke-width="6" stroke-linejoin="round"/>
+          <!-- 白鼻樑 + 白嘴邊 -->
+          <path d="M 200 115 C 192 152 160 176 146 215 C 138 235 168 246 200 246 C 232 246 262 235 254 215 C 240 176 208 152 200 115 Z" fill="#FFFFFF"/>
+          <!-- 閃亮琥珀色星星大眼 -->
+          <g>
+            <circle cx="154" cy="162" r="20" fill="#9E5B1B" stroke="#4A344D" stroke-width="6.5"/>
+            <circle cx="154" cy="162" r="14" fill="#D88B28"/>
+            <path d="M 154 144 L 159 157 L 172 162 L 159 167 L 154 180 L 149 167 L 136 162 L 149 157 Z" fill="#FFFFFF"/>
+            <circle cx="246" cy="162" r="20" fill="#9E5B1B" stroke="#4A344D" stroke-width="6.5"/>
+            <circle cx="246" cy="162" r="14" fill="#D88B28"/>
+            <path d="M 246 144 L 251 157 L 264 162 L 251 167 L 246 180 L 241 167 L 228 162 L 241 157 Z" fill="#FFFFFF"/>
+          </g>
+          <!-- 粉紅鼻 + 開心張嘴大笑 -->
+          <ellipse cx="200" cy="178" rx="7.5" ry="5" fill="#E598AA"/>
+          <path d="M 184 188 Q 200 192 216 188 C 216 208 184 208 184 188 Z" fill="#D96B82" stroke="#4A344D" stroke-width="5.5" stroke-linejoin="round"/>
+          <path d="M 190 198 Q 200 193 210 198 C 208 205 192 205 190 198 Z" fill="#F49FB0"/>
+          <!-- 白色鬍鬚 -->
+          <line x1="78" y1="184" x2="115" y2="188" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="82" y1="202" x2="117" y2="198" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="322" y1="184" x2="285" y2="188" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="318" y1="202" x2="283" y2="198" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <!-- 錢罌爆金幣 -->
+          <g>
+            <circle cx="184" cy="216" r="12" fill="#FFE08A" stroke="#4A344D" stroke-width="5.5"/>
+            <circle cx="200" cy="212" r="13" fill="#FFD15C" stroke="#4A344D" stroke-width="5.5"/>
+            <circle cx="216" cy="216" r="12" fill="#FFE08A" stroke="#4A344D" stroke-width="5.5"/>
+            <!-- 紫色小豬錢罌 -->
+            <path d="M 160 228 L 150 208 C 148 202 156 198 164 204 L 180 216 Q 200 210 220 216 L 236 204 C 244 198 252 202 250 208 L 240 228 C 258 245 256 282 238 296 L 236 310 C 235 315 220 315 218 308 L 216 302 Q 200 304 184 302 L 182 308 C 180 315 165 315 164 310 L 162 296 C 144 282 142 245 160 228 Z" fill="#C9A3DC" stroke="#4A344D" stroke-width="7.5" stroke-linejoin="round"/>
+            <circle cx="176" cy="256" r="5.5" fill="#4A344D"/>
+            <circle cx="224" cy="256" r="5.5" fill="#4A344D"/>
+            <ellipse cx="200" cy="268" rx="16" ry="11" fill="#B589CC" stroke="#4A344D" stroke-width="4.5"/>
+            <circle cx="195" cy="268" r="2.8" fill="#4A344D"/>
+            <circle cx="205" cy="268" r="2.8" fill="#4A344D"/>
+          </g>
+          <!-- 抱住錢罌嘅白色手仔 & 腳仔 -->
+          <circle cx="148" cy="266" r="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="6.5"/>
+          <circle cx="252" cy="266" r="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="6.5"/>
+          <ellipse cx="152" cy="350" rx="24" ry="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="7.5"/>
+          <ellipse cx="248" cy="350" rx="24" ry="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="7.5"/>
+        </svg>
+      `),
+
+      // 狀態 3：瞇眼版 (逾期) —— 眼皮垂低，嘴扁晒，頭上有 Zzz，抱住空錢罌
+      sleepy: `data:image/svg+xml;utf8,` + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+          <rect width="400" height="400" rx="48" fill="#F9F2FF"/>
+          <!-- 右上角紫色 Zzz -->
+          <text x="305" y="88" font-family="Fredoka, sans-serif" font-weight="800" font-size="26" fill="#B284CC" transform="rotate(-12 305 88)">z</text>
+          <text x="325" y="72" font-family="Fredoka, sans-serif" font-weight="800" font-size="34" fill="#B284CC" transform="rotate(-12 325 72)">z</text>
+          <text x="350" y="54" font-family="Fredoka, sans-serif" font-weight="800" font-size="40" fill="#B284CC" transform="rotate(-12 350 54)">Z</text>
+
+          <!-- 尾巴 -->
+          <path d="M 105 328 C 60 322 55 278 90 286 C 105 290 112 308 112 320 Z" fill="#A595AE" stroke="#4A344D" stroke-width="8" stroke-linecap="round"/>
+          <!-- 身體 -->
+          <path d="M 108 215 C 88 265 92 345 142 355 L 258 355 C 308 345 312 265 292 215 Z" fill="#B5A6BE" stroke="#4A344D" stroke-width="8" stroke-linejoin="round"/>
+          <ellipse cx="200" cy="295" rx="58" ry="52" fill="#FFFFFF"/>
+          <!-- 圓頭 + 垂耳 -->
+          <path d="M 108 135 L 96 62 C 96 56 102 54 108 56 L 165 82 C 188 76 212 76 235 82 L 292 56 C 298 54 304 56 304 62 L 292 135 C 318 168 312 222 272 238 C 232 252 168 252 128 238 C 88 222 82 168 108 135 Z" fill="#B5A6BE" stroke="#4A344D" stroke-width="8" stroke-linejoin="round"/>
+          <path d="M 112 120 L 106 76 L 148 92 Z" fill="#F2B4C4" stroke="#4A344D" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M 288 120 L 294 76 L 252 92 Z" fill="#F2B4C4" stroke="#4A344D" stroke-width="6" stroke-linejoin="round"/>
+          <!-- 白鼻樑 + 白嘴邊 -->
+          <path d="M 200 115 C 192 152 160 176 146 215 C 138 235 168 246 200 246 C 232 246 262 235 254 215 C 240 176 208 152 200 115 Z" fill="#FFFFFF"/>
+          <!-- 眼皮垂低瞇眼 -->
+          <g>
+            <path d="M 134 166 C 138 182 170 182 174 166 Z" fill="#C97F28" stroke="#4A344D" stroke-width="6.5" stroke-linejoin="round"/>
+            <path d="M 131 164 Q 154 170 177 164" fill="none" stroke="#4A344D" stroke-width="7.5" stroke-linecap="round"/>
+            <path d="M 226 166 C 230 182 262 182 266 166 Z" fill="#C97F28" stroke="#4A344D" stroke-width="6.5" stroke-linejoin="round"/>
+            <path d="M 223 164 Q 246 170 269 164" fill="none" stroke="#4A344D" stroke-width="7.5" stroke-linecap="round"/>
+          </g>
+          <!-- 粉紅鼻 + 嘴扁晒 -->
+          <ellipse cx="200" cy="184" rx="7.5" ry="5" fill="#E598AA"/>
+          <path d="M 188 202 Q 200 192 212 202" fill="none" stroke="#4A344D" stroke-width="6.5" stroke-linecap="round"/>
+          <!-- 白色鬍鬚 -->
+          <line x1="78" y1="186" x2="115" y2="188" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="82" y1="204" x2="117" y2="198" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="322" y1="186" x2="285" y2="188" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="318" y1="204" x2="283" y2="198" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+          <!-- 連小豬錢罌都瞓著覺 (瞇眼空錢罌) -->
+          <g>
+            <path d="M 160 228 L 150 208 C 148 202 156 198 164 204 L 180 216 Q 200 210 220 216 L 236 204 C 244 198 252 202 250 208 L 240 228 C 258 245 256 282 238 296 L 236 310 C 235 315 220 315 218 308 L 216 302 Q 200 304 184 302 L 182 308 C 180 315 165 315 164 310 L 162 296 C 144 282 142 245 160 228 Z" fill="#C9A3DC" stroke="#4A344D" stroke-width="7.5" stroke-linejoin="round"/>
+            <line x1="186" y1="224" x2="214" y2="224" stroke="#4A344D" stroke-width="7" stroke-linecap="round"/>
+            <!-- 小豬瞇眼 -->
+            <path d="M 170 256 Q 176 261 182 256" fill="none" stroke="#4A344D" stroke-width="5" stroke-linecap="round"/>
+            <path d="M 218 256 Q 224 261 230 256" fill="none" stroke="#4A344D" stroke-width="5" stroke-linecap="round"/>
+            <ellipse cx="200" cy="268" rx="16" ry="11" fill="#B589CC" stroke="#4A344D" stroke-width="4.5"/>
+            <circle cx="195" cy="268" r="2.8" fill="#4A344D"/>
+            <circle cx="205" cy="268" r="2.8" fill="#4A344D"/>
+          </g>
+          <!-- 抱住錢罌嘅白色手仔 & 腳仔 -->
+          <circle cx="148" cy="266" r="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="6.5"/>
+          <circle cx="252" cy="266" r="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="6.5"/>
+          <ellipse cx="152" cy="350" rx="24" ry="15" fill="#FFFFFF" stroke="#4A344D" stroke-width="7.5"/>
+          <ellipse cx="248" cy="350" rx="24" ry="15" fill="#FFFFFF" stroke-width="7.5"/>
+        </svg>
+      `)
+    };
+
+    /******************************************************************
+     * 2. 狀態管理 & LocalStorage 儲存
+     ******************************************************************/
+    const STORAGE_KEY_BILLS = 'lilac_card_tracker_bills_v1';
+    const STORAGE_KEY_IMAGES = 'lilac_card_tracker_images_v1';
+
+    let bills = [];
+    let currentFilter = 'all';
+    let searchQuery = '';
+    let mascotImages = { ...DEFAULT_MASCOT_SVGS };
+
+    // 記錄上一次數值以供 Count-up 動畫使用
+    let prevStats = { unpaid: 0, paid: 0, total: 0 };
+
+    // 載入儲存嘅圖片及帳單
+    function loadFromStorage() {
+      try {
+        const savedImgs = localStorage.getItem(STORAGE_KEY_IMAGES);
+        if (savedImgs) {
+          const parsed = JSON.parse(savedImgs);
+          mascotImages = { ...DEFAULT_MASCOT_SVGS, ...parsed };
+        }
+      } catch (e) {
+        console.warn('讀取丁香圖片失敗，使用預設插畫', e);
+      }
+
+      try {
+        const savedBills = localStorage.getItem(STORAGE_KEY_BILLS);
+        if (savedBills) {
+          bills = JSON.parse(savedBills);
+        } else {
+          // 首次打開提供 3 張貼心香港信用卡示範數據
+          bills = getInitialDemoBills();
+          saveBillsToStorage();
+        }
+      } catch (e) {
+        bills = getInitialDemoBills();
+      }
+    }
+
+    function getInitialDemoBills() {
+      const today = new Date();
+      const plus5 = new Date(today);
+      plus5.setDate(today.getDate() + 5);
+      const plus12 = new Date(today);
+      plus12.setDate(today.getDate() + 12);
+      const minus2 = new Date(today);
+      minus2.setDate(today.getDate() - 2);
+
+      return [
+        {
+          id: 'demo-1',
+          name: 'HSBC Red 信用卡',
+          amount: 3480,
+          dueDate: formatDateISO(plus5),
+          paid: false,
+          createdAt: Date.now() - 30000
+        },
+        {
+          id: 'demo-2',
+          name: '恒生 MMPOWER World Mastercard',
+          amount: 1850,
+          dueDate: formatDateISO(plus12),
+          paid: true,
+          createdAt: Date.now() - 20000
+        },
+        {
+          id: 'demo-3',
+          name: 'Mox Credit',
+          amount: 920,
+          dueDate: formatDateISO(minus2),
+          paid: false,
+          createdAt: Date.now() - 10000
+        }
+      ];
+    }
+
+    function saveBillsToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY_BILLS, JSON.stringify(bills));
+      } catch (e) {
+        console.error('儲存卡數失敗', e);
+      }
+    }
+
+    /******************************************************************
+     * 3. 日期處理輔助函數（支援「假框包裝法」同埋只顯示月日）
+     ******************************************************************/
+    function formatDateISO(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    // 將 YYYY-MM-DD 轉為「X月X日」
+    function formatMonthDay(isoStr) {
+      if (!isoStr) return '未揀日子';
+      const parts = isoStr.split('-');
+      if (parts.length < 3) return isoStr;
+      return `${parseInt(parts[1], 10)}月${parseInt(parts[2], 10)}日`;
+    }
+
+    // 計算距離到期日仲有幾多日 (負數代表已逾期)
+    function getDaysRemaining(isoDateStr) {
+      const now = new Date();
+      const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const [y, m, d] = isoDateStr.split('-').map(Number);
+      const dueMidnight = new Date(y, m - 1, d);
+      const diffMs = dueMidnight - todayMidnight;
+      return Math.round(diffMs / (1000 * 60 * 60 * 24));
+    }
+
+    function isBillOverdue(bill) {
+      if (bill.paid) return false;
+      return getDaysRemaining(bill.dueDate) < 0;
+    }
+
+    // 更新假框包裝入面嘅 span 文字
+    function updateFakeDateDisplay(val) {
+      const displayEl = document.getElementById('fake-date-display');
+      if (!val) {
+        displayEl.textContent = '揀個日子';
+        displayEl.classList.add('text-mutedBrown');
+      } else {
+        displayEl.textContent = formatMonthDay(val);
+        displayEl.classList.remove('text-mutedBrown');
+      }
+    }
+
+    /******************************************************************
+     * 4. 數字 Count-up 微動畫 & 愛心紙碎特效
+     ******************************************************************/
+    function animateCountUp(elId, startVal, endVal, duration = 550) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      const startTime = performance.now();
+
+      function step(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        const current = startVal + (endVal - startVal) * eased;
+        el.textContent = Math.round(current).toLocaleString('en-US');
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          el.textContent = Number(endVal).toLocaleString('en-US', {
+            minimumFractionDigits: endVal % 1 !== 0 ? 1 : 0,
+            maximumFractionDigits: 2
+          });
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    // 成功還款彈出愛心同埋紫黃粉紙碎
+    function launchHeartConfetti(originEvent) {
+      const symbols = ['💖', '💜', '💛', '✨', '🐾', '🌸'];
+      const originX = originEvent && originEvent.clientX ? originEvent.clientX : window.innerWidth / 2;
+      const originY = originEvent && originEvent.clientY ? originEvent.clientY : window.innerHeight / 2;
+
+      for (let i = 0; i < 24; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'confetti-particle text-xl select-none';
+        particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+        const angle = (Math.PI * 2 * i) / 24 + (Math.random() - 0.5) * 0.5;
+        const distance = 70 + Math.random() * 130;
+        const txMid = Math.cos(angle) * (distance * 0.6) + 'px';
+        const tyMid = (Math.sin(angle) * (distance * 0.6) - 55) + 'px';
+        const txEnd = Math.cos(angle) * distance + 'px';
+        const tyEnd = (Math.sin(angle) * distance + 90) + 'px';
+
+        particle.style.left = `${originX}px`;
+        particle.style.top = `${originY}px`;
+        particle.style.setProperty('--tx-mid', txMid);
+        particle.style.setProperty('--ty-mid', tyMid);
+        particle.style.setProperty('--tx-end', txEnd);
+        particle.style.setProperty('--ty-end', tyEnd);
+        particle.style.animationDuration = `${750 + Math.random() * 450}ms`;
+
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 1250);
+      }
+    }
+
+    /******************************************************************
+     * 5. 核心 UI 渲染 (吉祥物 3 狀態切換 + 進度條 + 卡片列表)
+     ******************************************************************/
+    function renderApp() {
+      // 計算總欠款、已還總數、仲差幾多
+      let totalAmount = 0;
+      let paidAmount = 0;
+      let unpaidAmount = 0;
+      let hasOverdue = false;
+
+      bills.forEach(bill => {
+        const amt = Number(bill.amount) || 0;
+        totalAmount += amt;
+        if (bill.paid) {
+          paidAmount += amt;
+        } else {
+          unpaidAmount += amt;
+          if (isBillOverdue(bill)) {
+            hasOverdue = true;
+          }
+        }
+      });
+
+      const progressPct = totalAmount > 0 ? Math.min(100, Math.round((paidAmount / totalAmount) * 100)) : 100;
+
+      // Count-up 數字動畫
+      animateCountUp('stat-unpaid', prevStats.unpaid, unpaidAmount);
+      animateCountUp('stat-paid', prevStats.paid, paidAmount);
+      animateCountUp('stat-total', prevStats.total, totalAmount);
+      prevStats = { unpaid: unpaidAmount, paid: paidAmount, total: totalAmount };
+
+      // 更新進度條同丁香頭位置 (限制喺 5% ~ 95% 之間避免丁香個頭貼邊出界)
+      document.getElementById('progress-percent').textContent = `${progressPct}%`;
+      document.getElementById('progress-bar-fill').style.width = `${progressPct}%`;
+      const thumbPos = Math.max(5, Math.min(95, progressPct));
+      document.getElementById('progress-cat-thumb').style.left = `${thumbPos}%`;
+
+      // 切換丁香 3 種狀態插畫 & 可愛人話文案
+      const mascotImg = document.getElementById('mascot-img');
+      const mascotBadge = document.getElementById('mascot-badge');
+      const mascotQuote = document.getElementById('mascot-quote');
+      const progressSubquote = document.getElementById('progress-subquote');
+
+      if (hasOverdue) {
+        // 狀態 3：瞇眼版 (逾期)
+        mascotImg.src = mascotImages.sleepy;
+        mascotBadge.className = 'inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-sm font-extrabold bg-peach text-deepBrown shadow-sm';
+        mascotBadge.innerHTML = '💤 丁香等到瞇埋眼啦，快啲還啦';
+        mascotQuote.textContent = '「喵嗚... 丁香等到眼皮都垂低埋，快啲餵飽個空錢罌啦！」';
+      } else if (unpaidAmount === 0 && bills.length > 0) {
+        // 狀態 2：開心版 (欠款=0)
+        mascotImg.src = mascotImages.happy;
+        mascotBadge.className = 'inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-sm font-extrabold bg-butter text-deepBrown shadow-sm';
+        mascotBadge.innerHTML = '🌟 丁香開心到打滾啦！';
+        mascotQuote.textContent = '「自由啦！主人好叻！錢罌爆滿金幣喇喵～」';
+      } else {
+        // 狀態 1：正常版 (有欠款)
+        mascotImg.src = mascotImages.normal;
+        mascotBadge.className = 'inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-sm font-extrabold bg-lilacLight text-deepBrown';
+        mascotBadge.innerHTML = `💳 丁香話：仲差 $${unpaidAmount.toLocaleString()} 咋`;
+        mascotQuote.textContent = '「丁香抱實個小豬錢罌盯住你，記住準時餵飽我呀！」';
+      }
+
+      // 進度文案要求：80% 時寫「差少少就餵飽我啦！」，100% 寫「自由啦！主人好叻！」
+      if (progressPct === 100 && bills.length > 0) {
+        progressSubquote.textContent = '🎉 自由啦！主人好叻！今個月卡數清晒！';
+      } else if (progressPct >= 80) {
+        progressSubquote.textContent = '✨ 差少少就餵飽我啦！衝呀！';
+      } else if (progressPct >= 40) {
+        progressSubquote.textContent = '🐾 已經餵咗一半有多，繼續加油喵！';
+      } else {
+        progressSubquote.textContent = '💪 一步一步清卡數，丁香陪住你！';
+      }
+
+      // 更新篩選器括號數字
+      const unpaidCount = bills.filter(b => !b.paid).length;
+      const paidCount = bills.filter(b => b.paid).length;
+      const overdueCount = bills.filter(b => isBillOverdue(b)).length;
+      document.getElementById('count-all').textContent = `(${bills.length})`;
+      document.getElementById('count-unpaid').textContent = `(${unpaidCount})`;
+      document.getElementById('count-paid').textContent = `(${paidCount})`;
+      document.getElementById('count-overdue').textContent = `(${overdueCount})`;
+
+      // 篩選及搜尋列表
+      const filteredBills = bills
+        .filter(bill => {
+          if (currentFilter === 'unpaid') return !bill.paid;
+          if (currentFilter === 'paid') return bill.paid;
+          if (currentFilter === 'overdue') return isBillOverdue(bill);
+          return true;
+        })
+        .filter(bill => {
+          if (!searchQuery.trim()) return true;
+          return bill.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+        })
+        // 排序：逾期最前 -> 未還按到期日由近到遠 -> 已還最後
+        .sort((a, b) => {
+          if (a.paid !== b.paid) return a.paid ? 1 : -1;
+          return getDaysRemaining(a.dueDate) - getDaysRemaining(b.dueDate);
+        });
+
+      const listContainer = document.getElementById('bills-list');
+      if (filteredBills.length === 0) {
+        listContainer.innerHTML = `
+          <div class="lilac-card p-8 text-center space-y-2">
+            <div class="text-4xl">🐾</div>
+            <p class="text-base font-extrabold text-deepBrown">呢度暫時冇卡數記錄喵～</p>
+            <p class="text-sm font-bold text-mutedBrown">可以喺上面「+ 記一筆啦」新增信用卡或者貸款！</p>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = filteredBills.map(bill => {
+        const daysLeft = getDaysRemaining(bill.dueDate);
+        const overdue = isBillOverdue(bill);
+        const formattedAmt = Number(bill.amount).toLocaleString('en-US', {
+          minimumFractionDigits: bill.amount % 1 !== 0 ? 1 : 0,
+          maximumFractionDigits: 2
+        });
+
+        // 狀態徽章與倒數日數文案
+        let statusTagHtml = '';
+        let cardVisualClass = '';
+        let barColor = 'linear-gradient(90deg, #E9D5FF 0%, #C8A2D8 100%)';
+        let cardProgressWidth = bill.paid ? '100%' : '20%';
+
+        if (bill.paid) {
+          cardVisualClass = 'opacity-65 bg-[#F5F1FA] grayscale-[25%]';
+          barColor = 'linear-gradient(90deg, #C8A2D8 0%, #FFE08A 100%)';
+          statusTagHtml = `
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-extrabold bg-butter text-deepBrown">
+              🎉 丁香開心到打滾啦！
+            </span>
+          `;
+        } else if (overdue) {
+          cardVisualClass = 'border-[#FF7A9A] bg-[#FFF8FA]';
+          barColor = 'linear-gradient(90deg, #FFB3C7 0%, #FF7A9A 100%)';
+          cardProgressWidth = '100%';
+          statusTagHtml = `
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-extrabold bg-[#FFD6E0] text-[#A82348] animate-pulse">
+              🚨 丁香等到瞇埋眼啦，快啲還啦 (過期 ${Math.abs(daysLeft)} 日)
+            </span>
+          `;
+        } else if (daysLeft === 0) {
+          statusTagHtml = `
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-extrabold bg-butter text-deepBrown">
+              ⏰ 今日就係最後召集啦！
+            </span>
+          `;
+          cardProgressWidth = '75%';
+        } else {
+          statusTagHtml = `
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-extrabold bg-lilacLight text-deepBrown">
+              ⏳ 仲有 <span class="chubby-num">${daysLeft}</span> 日到期
+            </span>
+          `;
+          cardProgressWidth = daysLeft <= 5 ? '65%' : '35%';
+        }
+
+        return `
+          <article class="lilac-card p-5 space-y-4 ${cardVisualClass}">
+            <!-- 第一行：卡名 + 刪除小按鈕 -->
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <h3 class="text-lg font-extrabold text-deepBrown leading-snug break-words">
+                  ${escapeHtml(bill.name)}
+                </h3>
+                <div class="mt-1.5">
+                  ${statusTagHtml}
+                </div>
+              </div>
+              <button
+                onclick="deleteBill('${bill.id}')"
+                class="btn-capsule w-8 h-8 rounded-full bg-[#F5EEFC] text-mutedBrown hover:text-deepBrown flex items-center justify-center shrink-0 text-sm font-bold"
+                title="刪除呢筆記錄"
+              >
+                ✕
+              </button>
+            </div>
+
+            <!-- 第二行：欠款金額 + 到期日 -->
+            <div class="grid grid-cols-2 gap-3 bg-[#FAF6FF] p-3.5 rounded-2xl border border-lilacLight">
+              <div>
+                <div class="text-sm font-bold text-mutedBrown">
+                  ${bill.paid ? '🎉 已餵飽金額' : '💳 丁香話：仲差咁多咋'}
+                </div>
+                <div class="chubby-num text-xl text-deepBrown mt-0.5">
+                  $${formattedAmt}
+                </div>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-mutedBrown">
+                  📅 要喺呢日之前餵飽丁香
+                </div>
+                <div class="chubby-num text-lg text-deepBrown mt-0.5">
+                  ${formatMonthDay(bill.dueDate)}
+                </div>
+              </div>
+            </div>
+
+            <!-- 第三行：單卡還款進度條 -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-sm font-bold text-mutedBrown">
+                <span>${bill.paid ? '🎉 呢張卡已經餵飽丁香！' : '🐾 餵飽進度'}</span>
+                <span class="chubby-num">${bill.paid ? '100%' : '待餵飽'}</span>
+              </div>
+              <div class="h-3 w-full bg-[#EFE6F7] rounded-full overflow-hidden p-0.5">
+                <div class="h-full rounded-full transition-all duration-500"
+                     style="width: ${cardProgressWidth}; background: ${barColor};">
+                </div>
+              </div>
+            </div>
+
+            <!-- 第四行：操作按鈕 -->
+            <div class="pt-1">
+              ${
+                bill.paid
+                  ? `<button onclick="toggleBillPaid('${bill.id}', event)" class="btn-capsule w-full py-3 bg-lilacLight/70 text-deepBrown font-extrabold text-sm border-2 border-lilac flex items-center justify-center gap-1.5">
+                       <span>🎉</span>
+                       <span>丁香開心到打滾啦！（撳呢度可還原未還）</span>
+                     </button>`
+                  : `<button onclick="toggleBillPaid('${bill.id}', event)" class="btn-capsule w-full py-3 bg-butter hover:bg-[#FFD666] text-deepBrown font-extrabold text-base shadow-sm border-2 border-deepBrown/15 flex items-center justify-center gap-2">
+                       <span>💖</span>
+                       <span>餵飽丁香！（標記已還清）</span>
+                     </button>`
+              }
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    /******************************************************************
+     * 6. 互動事件處理 (新增、切換已還、篩選、搜尋、圖片上傳)
+     ******************************************************************/
+    function handlePresetSelect(val) {
+      if (!val) return;
+      const nameInput = document.getElementById('card-name-input');
+      nameInput.value = val;
+      nameInput.focus();
+    }
+
+    function handleAddBill(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById('card-name-input');
+      const amountInput = document.getElementById('amount-input');
+      const dueDateInput = document.getElementById('due-date-input');
+      const submitBtn = document.getElementById('submit-btn');
+
+      const name = nameInput.value.trim();
+      const amount = parseFloat(amountInput.value);
+      const dueDate = dueDateInput.value;
+
+      if (!name || isNaN(amount) || !dueDate) return;
+
+      // 按鈕彈跳動畫
+      submitBtn.classList.remove('bounce-click');
+      void submitBtn.offsetWidth;
+      submitBtn.classList.add('bounce-click');
+
+      const newBill = {
+        id: 'bill-' + Date.now(),
+        name,
+        amount,
+        dueDate,
+        paid: false,
+        createdAt: Date.now()
+      };
+
+      bills.unshift(newBill);
+      saveBillsToStorage();
+
+      // 重設表單
+      nameInput.value = '';
+      amountInput.value = '';
+      document.getElementById('preset-card-select').value = '';
+      renderApp();
+    }
+
+    function toggleBillPaid(billId, event) {
+      const target = bills.find(b => b.id === billId);
+      if (!target) return;
+
+      target.paid = !target.paid;
+      saveBillsToStorage();
+
+      if (target.paid) {
+        launchHeartConfetti(event);
+      }
+      renderApp();
+    }
+
+    function deleteBill(billId) {
+      bills = bills.filter(b => b.id !== billId);
+      saveBillsToStorage();
+      renderApp();
+    }
+
+    function setFilter(filterType, btnEl) {
+      currentFilter = filterType;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.className = 'filter-btn btn-capsule py-2 px-2 text-sm font-extrabold bg-cardWhite text-mutedBrown border-2 border-lilacLight';
+      });
+      if (btnEl) {
+        btnEl.className = 'filter-btn btn-capsule py-2 px-2 text-sm font-extrabold bg-lilac text-deepBrown border-2 border-deepBrown/15 shadow-sm';
+      }
+      renderApp();
+    }
+
+    function handleSearch(val) {
+      searchQuery = val;
+      renderApp();
+    }
+
+    function clearAllPaid() {
+      bills = bills.filter(b => !b.paid);
+      saveBillsToStorage();
+      renderApp();
+    }
+
+    function resetDemoData() {
+      bills = getInitialDemoBills();
+      saveBillsToStorage();
+      renderApp();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    /******************************************************************
+     * 7. 丁香圖片管理 Modal & PWA (Manifest + 180x180 實色背景 Apple Touch Icon)
+     ******************************************************************/
+    function openPhotoModal() {
+      document.getElementById('preview-normal').src = mascotImages.normal;
+      document.getElementById('preview-happy').src = mascotImages.happy;
+      document.getElementById('preview-sleepy').src = mascotImages.sleepy;
+      const modal = document.getElementById('photo-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closePhotoModal() {
+      const modal = document.getElementById('photo-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openPwaGuide() {
+      const modal = document.getElementById('pwa-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closePwaGuide() {
+      const modal = document.getElementById('pwa-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // 壓縮並儲存用家揀選嘅丁香原圖 (確保 LocalStorage 唔爆位)
+    function handleCustomImageUpload(type, inputEl) {
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const size = 480;
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#F7F2FF';
+          ctx.fillRect(0, 0, size, size);
+
+          // 置中裁切正方形
+          const minSide = Math.min(img.width, img.height);
+          const sx = (img.width - minSide) / 2;
+          const sy = (img.height - minSide) / 2;
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.86);
+          mascotImages[type] = dataUrl;
+
+          try {
+            localStorage.setItem(STORAGE_KEY_IMAGES, JSON.stringify(mascotImages));
+          } catch (err) {
+            console.warn('圖片太大未能寫入 localStorage', err);
+          }
+
+          document.getElementById(`preview-${type}`).src = dataUrl;
+          renderApp();
+          setupPWAAndIcons();
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetDefaultMascotImages() {
+      mascotImages = { ...DEFAULT_MASCOT_SVGS };
+      localStorage.removeItem(STORAGE_KEY_IMAGES);
+      document.getElementById('preview-normal').src = mascotImages.normal;
+      document.getElementById('preview-happy').src = mascotImages.happy;
+      document.getElementById('preview-sleepy').src = mascotImages.sleepy;
+      renderApp();
+      setupPWAAndIcons();
+    }
+
+    // 產生 180x180 實色背景 (#F7F2FF) 丁香頭像 apple-touch-icon 同埋 manifest.json
+    function setupPWAAndIcons() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 180;
+      canvas.height = 180;
+      const ctx = canvas.getContext('2d');
+
+      // 實色奶油紫背景 (唔透明)
+      ctx.fillStyle = '#F7F2FF';
+      ctx.fillRect(0, 0, 180, 180);
+
+      const iconImg = new Image();
+      iconImg.onload = function() {
+        // 放大丁香個頭做 Icon
+        ctx.drawImage(iconImg, -20, -10, 220, 220);
+        const iconDataUrl = canvas.toDataURL('image/png');
+
+        const appleIconLink = document.getElementById('apple-touch-icon');
+        if (appleIconLink) appleIconLink.href = iconDataUrl;
+
+        const manifestObj = {
+          name: '卡數安心追蹤本',
+          short_name: '丁香記賬',
+          display: 'standalone',
+          background_color: '#F7F2FF',
+          theme_color: '#C8A2D8',
+          start_url: '.',
+          icons: [
+            {
+              src: iconDataUrl,
+              sizes: '180x180',
+              type: 'image/png'
+            },
+            {
+              src: iconDataUrl,
+              sizes: '512x512',
+              type: 'image/png'
+            }
+          ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.getElementById('pwa-manifest');
+        if (manifestLink) manifestLink.href = manifestUrl;
+      };
+      iconImg.src = mascotImages.normal;
+    }
+
+    /******************************************************************
+     * 8. 初始化啟動
+     ******************************************************************/
+    window.addEventListener('DOMContentLoaded', () => {
+      // 設定頂部月份標籤
+      const now = new Date();
+      document.getElementById('current-month-tag').textContent = `${now.getFullYear()}年${now.getMonth() + 1}月`;
+
+      // 預設將「呢日前餵飽丁香」日期設為 7 日後，方便即刻用
+      const defaultDue = new Date();
+      defaultDue.setDate(now.getDate() + 7);
+      const isoDefault = formatDateISO(defaultDue);
+      const dueDateInput = document.getElementById('due-date-input');
+      dueDateInput.value = isoDefault;
+      updateFakeDateDisplay(isoDefault);
+
+      // 載入資料並渲染
+      loadFromStorage();
+      renderApp();
+      setupPWAAndIcons();
+    });
+  </script>
+</body>
+</html>
